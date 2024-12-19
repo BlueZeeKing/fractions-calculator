@@ -17,6 +17,7 @@ Expression::Expression(const Expression& expression) {
         operation = expression.operation;
         left = new Expression(*expression.left);
         right = new Expression(*expression.right);
+        is_literal = false;
     }
 }
 

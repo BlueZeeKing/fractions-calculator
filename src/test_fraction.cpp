@@ -70,9 +70,9 @@ TEST_CASE("Testing divide by") {
 }
 
 TEST_CASE("Testing expression creation") {
-    Expression first = Expression(Fraction(1,1));
-    Expression expression = first.divide_by(Fraction(3, 1)).add_by(Fraction(2, 1)).divide_by(Fraction(3, 1));
-    Fraction value = expression.evaluate();
+    cerr << "start" << endl;
+
+    Fraction value = Expression(Fraction(1,1)).divide_by(Fraction(3, 1)).add_by(Fraction(2, 1)).divide_by(Fraction(3, 1)).evaluate();
 
     CHECK_EQ(value.numerator, 1);
     CHECK_EQ(value.denominator, 1);
