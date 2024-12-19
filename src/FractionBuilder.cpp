@@ -101,6 +101,14 @@ Fraction build_fraction(int row, int col, WINDOW* win, string initial_num) {
             }
             cursor_pos++;
             break; 
+        case '-':
+            if (is_at_top && cursor_pos == 0) {
+                num.insert(num.begin(), '-');
+            } else if (cursor_pos == 0) {
+                den.insert(den.begin(), '-');
+            }
+            cursor_pos++;
+            break;
         }
     }
 }
