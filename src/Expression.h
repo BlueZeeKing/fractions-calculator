@@ -1,4 +1,5 @@
 #include <variant>
+#include <vector>
 #include <string>
 #include "Fraction.h"
 using namespace std;
@@ -21,6 +22,7 @@ struct Expression {
     Expression(const Expression&);
     Expression(const Expression&, const Operation, const Expression&);
     ~Expression();
+    Expression& operator=(const Expression&);
 
     Expression multiply_by(const Expression&) const;
     Expression divide_by(const Expression&) const;
@@ -31,4 +33,6 @@ struct Expression {
 
     Fraction evaluate() const;
     string to_string(int indentation = 0) const;
+
+    static Expression parse_expression(vector<variant<Operation, Fraction>>&);
 };

@@ -1,5 +1,6 @@
 #include "ncurses.h"
 #include "Fraction.h"
+#include "Expression.h"
 #include "FractionBuilder.h"
 #include <cassert>
 #include <clocale>
@@ -7,13 +8,6 @@
 #include <vector>
 
 using namespace std;
-
-enum Operator {
-    Add,
-    Subtract,
-    Multiply,
-    Divide,
-};
 
 int main() {
     setlocale(LC_ALL, "");
@@ -24,9 +18,12 @@ int main() {
     curs_set(0);
     keypad(stdscr, true);
 
+    init_pair(0, COLOR_WHITE, COLOR_BLACK);
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+
     int current_col = 1;
 
-    vector<variant<Fraction, Operator>> input;
+    vector<variant<Operation, Fraction>> input;
 
     attr_on(A_BOLD, nullptr);
     mvaddstr(5, 2, "basic info");
@@ -64,22 +61,22 @@ int main() {
         int ch = getch();
         switch (ch) {
         case '+':
-            input.push_back(Operator::Add);
+            input.push_back(Operation::Add);
             mvaddch(2, current_col, '+');
             current_col += 2;
             break;
         case '-':
-            input.push_back(Operator::Subtract);
+            input.push_back(Operation::Subtract);
             mvaddch(2, current_col, '-');
             current_col += 2;
             break;
         case '*':
-            input.push_back(Operator::Multiply);
+            input.push_back(Operation::Multiply);
             mvaddch(2, current_col, '*');
             current_col += 2;
             break;
         case '/':
-            input.push_back(Operator::Divide);
+            input.push_back(Operation::Divide);
             mvaddch(2, current_col, '/');
             current_col += 2;
             break;
@@ -113,70 +110,12 @@ int main() {
         refresh();
     }
 
-    for (auto i = input.begin() + 1; i < input.end() - 1; i++) {
-        if (i->index() == 0 || (get<Operator>(*i) != Operator::Multiply && get<Operator>(*i) != Operator::Divide)) {
-            continue;
-        }
-
-        Fraction first = get<Fraction>(*(i - 1));
-        Operator op = get<Operator>(*i);
-        Fraction second = get<Fraction>(*(i + 1));
-
-        input.erase(i);
-        input.erase(i);
-        if (op == Operator::Multiply) {
-            *(i - 1) = first * second;
-        } else {
-            *(i - 1) = first / second;
-        }
-        i--;
-    }
-
-    for (auto i = input.begin() + 1; i < input.end() - 1; i++) {
-        if (i->index() == 0 || (get<Operator>(*i) != Operator::Add && get<Operator>(*i) != Operator::Subtract)) {
-            continue;
-        }
-
-        Fraction first = get<Fraction>(*(i - 1));
-        Operator op = get<Operator>(*i);
-        Fraction second = get<Fraction>(*(i + 1));
-
-        input.erase(i);
-        input.erase(i);
-        if (op == Operator::Add) {
-            *(i - 1) = first + second;
-        } else {
-            *(i - 1) = first - second;
-        }
-        i--;
-    }
-
-    for (auto i = input.begin(); i < input.end(); i++) {
-        char symbol;
-
-        switch (i->index()) {
-        case 0:
-            current_col += get<Fraction>(*i).output(1, current_col);
-            break;
-        case 1:
-            switch (get<Operator>(*i)) {
-            case Add:
-                symbol = '+';
-                break;
-            case Subtract:
-                symbol = '-';
-                break;
-            case Multiply:
-                symbol = '*';
-                break;
-            case Divide:
-                symbol = '/';
-                break;
-            }
-            mvaddch(2, current_col, symbol);
-            current_col += 2;
-            break;
-        }
+    try {
+        Expression::parse_expression(input).evaluate().output(1, current_col);
+    } catch (const char* error) {
+        color_set(1, nullptr);
+        mvaddstr(2, current_col, error);
+        color_set(0, nullptr);
     }
 
     getch();
