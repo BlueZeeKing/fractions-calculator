@@ -2,6 +2,7 @@
 #include "Fraction.h"
 #include "Expression.h"
 #include "build_fraction.h"
+#include "parse_expression.h"
 #include <cassert>
 #include <clocale>
 #include <variant>
@@ -111,7 +112,7 @@ int main() {
     }
 
     try {
-        Expression::parse_expression(input).evaluate().output(1, current_col);
+        parse_expression(input).evaluate().output(1, current_col);
     } catch (const char* error) {
         color_set(1, nullptr);
         mvaddstr(2, current_col, error);

@@ -6,10 +6,10 @@ build/%.o: src/%.cpp
 	@$(CC) -MM -MT $@ $< > build/$*.d
 	$(CC) -c -g -o $@ $< -std=$(STD)
 
-build/calculator: build/main.o build/Fraction.o build/build_fraction.o build/Expression.o
+build/calculator: build/main.o build/Fraction.o build/build_fraction.o build/Expression.o build/parse_expression.o
 	$(CC) -o $@ $^ -g -std=$(STD) -lncursesw -ltinfo
 
-build/test_fraction: build/test_fraction.o build/Fraction.o build/Expression.o
+build/test_fraction: build/test_fraction.o build/Fraction.o build/Expression.o build/parse_expression.o
 	$(CC) -o $@ $^ -g -std=$(STD) -lncursesw -ltinfo
 
 -include build/*.d

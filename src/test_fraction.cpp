@@ -2,6 +2,7 @@
 #include <doctest/doctest.h>
 #include "Fraction.h"
 #include "Expression.h"
+#include "parse_expression.h"
 
 TEST_CASE("Testing constructors") {
     Fraction fraction;
@@ -85,7 +86,7 @@ TEST_CASE("Testing expression parsing") {
     input.push_back(Fraction(2, 1));
     input.push_back(Divide);
     input.push_back(Fraction(3, 1));
-    Fraction value = Expression::parse_expression(input).evaluate();
+    Fraction value = parse_expression(input).evaluate();
 
     CHECK_EQ(value.numerator, 1);
     CHECK_EQ(value.denominator, 1);
