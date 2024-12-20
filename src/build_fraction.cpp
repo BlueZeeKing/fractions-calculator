@@ -2,7 +2,7 @@
 #include <ncurses.h>
 #include <string>
 #include "Fraction.h"
-#include "FractionBuilder.h"
+#include "build_fraction.h"
 using namespace std;
 
 Fraction build_fraction(int row, int col, WINDOW* win, string initial_num) {

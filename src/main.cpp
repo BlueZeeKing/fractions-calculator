@@ -1,7 +1,7 @@
 #include "ncurses.h"
 #include "Fraction.h"
 #include "Expression.h"
-#include "FractionBuilder.h"
+#include "build_fraction.h"
 #include <cassert>
 #include <clocale>
 #include <variant>
