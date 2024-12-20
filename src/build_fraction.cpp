@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <ncurses.h>
+#include <stdexcept>
 #include <string>
 #include "Fraction.h"
 #include "build_fraction.h"
@@ -51,7 +52,11 @@ Fraction build_fraction(int row, int col, WINDOW* win, string initial_num) {
                 is_at_top = false;
                 cursor_pos = min((int) den.length(), cursor_pos);
             } else {
-                return Fraction(stoi(num), stoi(den));
+                try {
+                    return Fraction(stoi(num), stoi(den));
+                } catch (invalid_argument e) {
+                    break;
+                }
             }
             break;
         case KEY_LEFT:
@@ -109,6 +114,10 @@ Fraction build_fraction(int row, int col, WINDOW* win, string initial_num) {
             }
             cursor_pos++;
             break;
+        case 'c':
+            throw ShouldClear;
+        case 'q':
+            throw ShouldQuit;
         }
     }
 }

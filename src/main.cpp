@@ -10,22 +10,7 @@
 
 using namespace std;
 
-int main() {
-    setlocale(LC_ALL, "");
-    initscr();
-    noecho();
-    start_color();
-    timeout(-1);
-    curs_set(0);
-    keypad(stdscr, true);
-
-    init_pair(0, COLOR_WHITE, COLOR_BLACK);
-    init_pair(1, COLOR_RED, COLOR_BLACK);
-
-    int current_col = 1;
-
-    vector<variant<Operation, Fraction>> input;
-
+void draw_help() {
     attr_on(A_BOLD, nullptr);
     mvaddstr(5, 2, "basic info");
 
@@ -52,74 +37,142 @@ int main() {
     mvaddstr(8, 80, "enter      | next line or complete fraction");
     mvaddstr(9, 80, "backspace  | delete");
     mvaddstr(10, 80, "/          | go to next line");
+    mvaddstr(11, 80, "c          | clear");
+    mvaddstr(12, 80, "q          | quit");
     attr_off(A_DIM, nullptr);
+}
+
+int main() {
+    setlocale(LC_ALL, "");
+    initscr();
+    noecho();
+    start_color();
+    timeout(-1);
+    curs_set(0);
+    keypad(stdscr, true);
+
+    init_pair(0, COLOR_WHITE, COLOR_BLACK);
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+
+    draw_help();
+
+    int current_col = 1, ch;
+    bool should_quit = false;
+
+    vector<variant<Operation, Fraction>> input;
 
     Fraction fraction;
 
-    while(true) {
-        mvchgat(2, current_col, 1, A_STANDOUT, 0, nullptr);
-        
-        int ch = getch();
-        switch (ch) {
-        case '+':
-            input.push_back(Operation::Add);
-            mvaddch(2, current_col, '+');
-            current_col += 2;
-            break;
-        case '-':
-            input.push_back(Operation::Subtract);
-            mvaddch(2, current_col, '-');
-            current_col += 2;
-            break;
-        case '*':
-            input.push_back(Operation::Multiply);
-            mvaddch(2, current_col, '*');
-            current_col += 2;
-            break;
-        case '/':
-            input.push_back(Operation::Divide);
-            mvaddch(2, current_col, '/');
-            current_col += 2;
-            break;
-        case 'f': 
-            fraction = build_fraction(1, current_col);
-            current_col += fraction.output(1, current_col) + 1;
-            input.push_back(fraction);
-            break;
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            fraction = build_fraction(1, current_col, stdscr, string(1, ch));
-            current_col += fraction.output(1, current_col) + 1;
-            input.push_back(fraction);
-            break; 
+    while (true) {
+    start:
+
+        current_col = 1;
+        should_quit = false;
+        input.clear();
+
+        while(true) {
+            mvchgat(2, current_col, 1, A_STANDOUT, 0, nullptr);
+            
+            ch = getch();
+            switch (ch) {
+            case '+':
+                input.push_back(Operation::Add);
+                mvaddch(2, current_col, '+');
+                current_col += 2;
+                break;
+            case '-':
+                input.push_back(Operation::Subtract);
+                mvaddch(2, current_col, '-');
+                current_col += 2;
+                break;
+            case '*':
+                input.push_back(Operation::Multiply);
+                mvaddch(2, current_col, '*');
+                current_col += 2;
+                break;
+            case '/':
+                input.push_back(Operation::Divide);
+                mvaddch(2, current_col, '/');
+                current_col += 2;
+                break;
+            case 'f': 
+                try {
+                    fraction = build_fraction(1, current_col);
+                } catch (Error e) {
+                    switch (e) {
+                        case ShouldQuit:
+                            goto end;
+                        case ShouldClear:
+                            clear();
+                            draw_help();
+                            goto start;
+                    }
+                }
+                current_col += fraction.output(1, current_col) + 1;
+                input.push_back(fraction);
+                break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                try {
+                    fraction = build_fraction(1, current_col);
+                } catch (Error e) {
+                    switch (e) {
+                        case ShouldQuit:
+                            goto end;
+                        case ShouldClear:
+                            clear();
+                            draw_help();
+                            goto start;
+                    }
+                }
+                current_col += fraction.output(1, current_col) + 1;
+                input.push_back(fraction);
+                break; 
+            case 'c':
+                clear();
+                draw_help();
+                goto start;
+            case 'q':
+                goto end;
+            }
+
+            if (ch == '=') {
+                mvaddch(2, current_col, '=');
+                current_col += 2;
+                break;
+            }
+
+            refresh();
         }
 
-        if (ch == '=') {
-            mvaddch(2, current_col, '=');
-            current_col += 2;
-            break;
+        try {
+            parse_expression(input).evaluate().output(1, current_col);
+        } catch (const char* error) {
+            color_set(1, nullptr);
+            mvaddstr(2, current_col, error);
+            color_set(0, nullptr);
         }
 
-        refresh();
+        while (true) {
+            switch (getch()) {
+            case 'c':
+                clear();
+                draw_help();
+                goto start;
+            case 'q':
+                goto end;
+            }
+        }
     }
 
-    try {
-        parse_expression(input).evaluate().output(1, current_col);
-    } catch (const char* error) {
-        color_set(1, nullptr);
-        mvaddstr(2, current_col, error);
-        color_set(0, nullptr);
-    }
-
-    getch();
-
+    end:
     endwin();
 }
