@@ -71,23 +71,27 @@ TEST_CASE("Testing divide by") {
 }
 
 TEST_CASE("Testing expression creation") {
-    Fraction value = Expression(Fraction(1,1)).divide_by(Fraction(3, 1)).add_by(Fraction(2, 1)).divide_by(Fraction(3, 1)).evaluate();
+    Fraction value = (Expression(Fraction(1,1)) / Expression(Fraction(3, 1)) + Expression(Fraction(2, 1)) / Expression(Fraction(3, 1))).evaluate();
 
     CHECK_EQ(value.numerator, 1);
     CHECK_EQ(value.denominator, 1);
 }
 
 TEST_CASE("Testing expression parsing") {
-    vector<variant<Operation, Fraction>> input;
+    vector<variant<Symbol, Fraction>> input;
     input.push_back(Fraction(1, 1));
-    input.push_back(Multiply);
-    input.push_back(Fraction(1, 3));
-    input.push_back(Add);
-    input.push_back(Fraction(2, 1));
-    input.push_back(Divide);
+    input.push_back(Slash);
+    input.push_back(ParenL);
+    input.push_back(ParenL);
     input.push_back(Fraction(3, 1));
+    input.push_back(Plus);
+    input.push_back(Fraction(2, 1));
+    input.push_back(ParenR);
+    input.push_back(Slash);
+    input.push_back(Fraction(3, 1));
+    input.push_back(ParenR);
     Fraction value = parse_expression(input).evaluate();
 
-    CHECK_EQ(value.numerator, 1);
-    CHECK_EQ(value.denominator, 1);
+    CHECK_EQ(value.numerator, 3);
+    CHECK_EQ(value.denominator, 5);
 }

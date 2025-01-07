@@ -25,10 +25,15 @@ struct Expression {
     ~Expression();
     Expression& operator=(const Expression&);
 
-    Expression multiply_by(const Expression&) const;
-    Expression divide_by(const Expression&) const;
-    Expression subtract_by(const Expression&) const;
-    Expression add_by(const Expression&) const;
+    Expression operator*(const Expression&) const;
+    Expression operator/(const Expression&) const;
+    Expression operator-(const Expression&) const;
+    Expression operator+(const Expression&) const;
+
+    void operator*=(const Expression&);
+    void operator/=(const Expression&);
+    void operator-=(const Expression&);
+    void operator+=(const Expression&);
 
     Expression* right_most_literal();
 

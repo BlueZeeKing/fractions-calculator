@@ -6,4 +6,13 @@
 
 using namespace std;
 
-Expression parse_expression(vector<variant<Operation, Fraction>>&);
+enum Symbol {
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    ParenL,
+    ParenR
+};
+
+Expression parse_expression(vector<variant<Symbol, Fraction>> input);

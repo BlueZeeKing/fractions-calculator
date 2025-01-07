@@ -43,7 +43,7 @@ Expression* Expression::right_most_literal() {
     return right->right_most_literal();
 }
 
-Expression Expression::multiply_by(const Expression& other) const {
+Expression Expression::operator*(const Expression& other) const {
     Expression result(*this); 
     Expression* right_most = result.right_most_literal();
     right_most->left = new Expression(*right_most);
@@ -53,7 +53,7 @@ Expression Expression::multiply_by(const Expression& other) const {
     return result;
 }
 
-Expression Expression::divide_by(const Expression& other) const {
+Expression Expression::operator/(const Expression& other) const {
     Expression result(*this); 
     Expression* right_most = result.right_most_literal();
     Expression* right_most_copy = new Expression(*right_most);
@@ -64,11 +64,11 @@ Expression Expression::divide_by(const Expression& other) const {
     return result;
 }
 
-Expression Expression::add_by(const Expression& other) const {
+Expression Expression::operator+(const Expression& other) const {
     return Expression(*this, Add, other);
 }
 
-Expression Expression::subtract_by(const Expression& other) const {
+Expression Expression::operator-(const Expression& other) const {
     return Expression(*this, Subtract, other);
 }
 
@@ -143,4 +143,20 @@ Expression& Expression::operator=(const Expression& other) {
     }
 
     return *this;     
+}
+
+void Expression::operator*=(const Expression& other) {
+    this->operator=(*this * other);
+}
+
+void Expression::operator/=(const Expression& other) {
+    this->operator=(*this / other);
+}
+
+void Expression::operator-=(const Expression& other) {
+    this->operator=(*this - other);
+}
+
+void Expression::operator+=(const Expression& other) {
+    this->operator=(*this + other);
 }

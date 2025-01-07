@@ -1,39 +1,65 @@
 #include "parse_expression.h"
+#include "Expression.h"
 
-Expression parse_expression(vector<variant<Operation, Fraction>>& input) {
-    if (input.size() <= 2) {
-        throw "Not enough inputs";
+Expression parse_expression_no_parens(vector<variant<Symbol, Fraction>>::iterator input, vector<variant<Symbol, Fraction>>::iterator end) {
+    if (input == end) {
+        throw "Ran out of inputs";
     }
 
-    if (input[0].index() == 0) {
-        throw "Input cannot start with an operator";
+    if (input->index() == 0 && get<Symbol>(*input) == Minus) {
+        return Expression(Fraction(-1, 1)) * parse_expression_no_parens(input + 1, end);
     }
 
-    Expression expression = get<Fraction>(input[0]);
+    if (input->index() == 0) {
+        throw "Invalid operator";
+    }
 
-    for (auto i = input.begin() + 2; i < input.end(); i += 2) {
-        if (i->index() == 0) {
-            throw "Operator in an invalid position";
-        }
-        if ((i - 1)->index() == 1) {
-            throw "Fraction in an invalid position";
-        }
+    if (input == end - 1) {
+        return Expression(get<Fraction>(*input));
+    }
 
-        switch (get<Operation>(*(i - 1))) {
-        case Add:
-            expression = expression.add_by(get<Fraction>(*i));
-            break;
-        case Subtract:
-            expression = expression.subtract_by(get<Fraction>(*i));
-            break;
-        case Multiply:
-            expression = expression.multiply_by(get<Fraction>(*i));
-            break;
-        case Divide:
-            expression = expression.divide_by(get<Fraction>(*i));
-            break;
+    if ((input + 1)->index() == 1) {
+        throw "Invalid fraction";
+    }
+
+    switch (get<Symbol>(*(input + 1))) {
+    case Plus:
+        return Expression(get<Fraction>(*input)) + parse_expression_no_parens(input + 2, end);
+    case Minus:
+        return Expression(get<Fraction>(*input)) - parse_expression_no_parens(input + 2, end);
+    case Star:
+        return Expression(get<Fraction>(*input)) * parse_expression_no_parens(input + 2, end);
+    case Slash:
+        return Expression(get<Fraction>(*input)) / parse_expression_no_parens(input + 2, end);
+    default:
+        throw "Invalid symbol";
+    }
+}
+
+Expression parse_expression(vector<variant<Symbol, Fraction>> input) {
+    vector<int> left_paren_stack;
+    for (int i = 0; i < input.size(); i++) {
+        if (input[i].index() == 0 && get<Symbol>(input[i]) == ParenL) {
+            left_paren_stack.push_back(i);
+        } else if (input[i].index() == 0 && get<Symbol>(input[i]) == ParenR) {
+            if (left_paren_stack.size() == 0) {
+                throw "Too many left parentheses";
+            }
+            int beginning_idx = left_paren_stack.back();
+            left_paren_stack.pop_back();
+            input[beginning_idx] = parse_expression_no_parens(input.begin() + beginning_idx + 1, input.begin() + i).evaluate();
+            input.erase(input.begin() + beginning_idx + 1, input.begin() + i + 1);
+            i = beginning_idx;
+            if (i > 0 && input[i - 1].index() == 1) {
+                input.insert(input.begin() + i, Star);
+                i++;
+            }
         }
     }
 
-    return expression;
+    if (left_paren_stack.size() != 0) {
+        throw "Too many right parentheses";
+    }
+    
+    return parse_expression_no_parens(input.begin(), input.end());
 }

@@ -25,12 +25,13 @@ void draw_help() {
     mvaddstr(9, 2, "- number keys in normal mode also");
     mvaddstr(10, 5, "start creating a fraction");
 
-    mvaddstr(6, 50, "f | create fraction");
-    mvaddstr(7, 50, "+ | add");
-    mvaddstr(8, 50, "- | subtract");
-    mvaddstr(9, 50, "* | multiply");
-    mvaddstr(10, 50, "/ | divide");
-    mvaddstr(11, 50, "= | calculate");
+    mvaddstr(6, 50, "f  | create fraction");
+    mvaddstr(7, 50, "+  | add");
+    mvaddstr(8, 50, "-  | subtract");
+    mvaddstr(9, 50, "*  | multiply");
+    mvaddstr(10, 50, "/  | divide");
+    mvaddstr(10, 50, "() | parentheses");
+    mvaddstr(11, 50, "=  | calculate");
 
     mvaddstr(6, 80, "arrow keys | move around");
     mvaddstr(7, 80, "num keys   | type numbers");
@@ -59,7 +60,7 @@ int main() {
     int current_col = 1, ch;
     bool should_quit = false;
 
-    vector<variant<Operation, Fraction>> input;
+    vector<variant<Symbol, Fraction>> input;
 
     Fraction fraction;
 
@@ -76,24 +77,39 @@ int main() {
             ch = getch();
             switch (ch) {
             case '+':
-                input.push_back(Operation::Add);
+                input.push_back(Plus);
                 mvaddch(2, current_col, '+');
                 current_col += 2;
                 break;
             case '-':
-                input.push_back(Operation::Subtract);
+                input.push_back(Minus);
                 mvaddch(2, current_col, '-');
                 current_col += 2;
                 break;
             case '*':
-                input.push_back(Operation::Multiply);
+                input.push_back(Star);
                 mvaddch(2, current_col, '*');
                 current_col += 2;
                 break;
             case '/':
-                input.push_back(Operation::Divide);
+                input.push_back(Slash);
                 mvaddch(2, current_col, '/');
                 current_col += 2;
+                break;
+            case '(':
+                input.push_back(ParenL);
+                mvaddch(2, current_col, '|');
+                mvaddch(1, current_col, '/');
+                mvaddch(3, current_col, '\\');
+                current_col += 1;
+                break;
+            case ')':
+                input.push_back(ParenR);
+                mvaddch(2, current_col, ' ');
+                mvaddch(2, current_col-1, '|');
+                mvaddch(3, current_col-1, '/');
+                mvaddch(1, current_col-1, '\\');
+                current_col += 1;
                 break;
             case 'f': 
                 try {
@@ -122,7 +138,7 @@ int main() {
             case '8':
             case '9':
                 try {
-                    fraction = build_fraction(1, current_col);
+                    fraction = build_fraction(1, current_col, stdscr, string(1, (char) ch));
                 } catch (Error e) {
                     switch (e) {
                         case ShouldQuit:
