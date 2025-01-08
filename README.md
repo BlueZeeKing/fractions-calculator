@@ -6,6 +6,6 @@ Running `make` builds the `calculator` executable in the `build` directory.
 
 ## Todo
 
-- [ ] Parentheses
+- [X] Parentheses
 - [ ] Better error handling
 - [ ] Ability to delete and go back
